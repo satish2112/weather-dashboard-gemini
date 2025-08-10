@@ -9,6 +9,13 @@
 <body>
 
     <div class="weather-container">
+        <div class="unit-toggle-container">
+            <label class="unit-toggle">
+                <input type="checkbox" id="unit-toggle-checkbox">
+                <span class="slider"></span>
+                <span class="labels" data-on="°F" data-off="°C"></span>
+            </label>
+        </div>
         <div class="main-content">
             <div class="left-panel">
                 <div class="search-box">
@@ -45,6 +52,7 @@
                         <div class="detail-item"><span>Wind Direction</span><span id="wind-direction"><span id="wind-arrow">↑</span></span></div>
                         <div class="detail-item"><span>Sunrise</span><span id="sunrise-time"></span></div>
                         <div class="detail-item"><span>Sunset</span><span id="sunset-time"></span></div>
+                        <div class="detail-item aqi-item" id="aqi-item" style="display: none;"><span>Air Quality</span><span id="aqi-value"></span></div>
                         <div class="detail-item countdown-item">
                             <span id="countdown-label"></span>
                             <span id="countdown-timer"></span>

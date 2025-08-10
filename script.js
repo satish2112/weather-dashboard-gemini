@@ -9,11 +9,13 @@ const voiceSearchBtn = document.getElementById('voice-search-btn');
 const favoriteBtn = document.getElementById('favorite-btn');
 const favoritesContainer = document.getElementById('favorites-container');
 const forecastSection = document.getElementById('forecast-section');
+const unitToggleCheckbox = document.getElementById('unit-toggle-checkbox');
 
 // API configuration
-const apiKey = OPENWEATHER_API_KEY ; // IMPORTANT: Replace with your own OpenWeatherMap API key
+const apiKey = '531fa0df445606206bc52c0d35c1d844'; // IMPORTANT: Replace with your own OpenWeatherMap API key
 
 // Global state
+let currentUnit = 'metric'; // 'metric' or 'imperial'
 let favorites = [];
 let currentCityName = '';
 let countdownInterval;
@@ -24,6 +26,29 @@ const MAJOR_CITIES = [
     "Chicago", "Toronto", "Berlin", "Moscow", "Beijing", "Shanghai", "Mumbai", "Delhi",
     "Cairo", "Rio de Janeiro", "Mexico City", "Buenos Aires"
 ];
+
+/**
+ * Loads unit preference from localStorage and updates the toggle.
+ */
+function loadUnitPreference() {
+    const savedUnit = localStorage.getItem('weatherAppUnit');
+    if (savedUnit) {
+        currentUnit = savedUnit;
+    }
+    unitToggleCheckbox.checked = currentUnit === 'imperial';
+}
+
+/**
+ * Handles the unit toggle change.
+ */
+function handleUnitToggle() {
+    currentUnit = unitToggleCheckbox.checked ? 'imperial' : 'metric';
+    localStorage.setItem('weatherAppUnit', currentUnit);
+    // Re-fetch weather for the last known city with the new unit, if one exists
+    if (currentCityName) {
+        getCoordsForCity(currentCityName);
+    }
+}
 
 /**
  * Loads favorite cities from localStorage.
@@ -127,26 +152,31 @@ async function fetchAndDisplayWeather(lat, lon, originalCity = null) {
     weatherInfoDiv.style.display = 'none';
     forecastSection.style.display = 'none';
     errorMessageDiv.style.display = 'none';
+    document.getElementById('aqi-item').style.display = 'none';
 
     try {
-        const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
-        const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+        const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=${currentUnit}`;
+        const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=${currentUnit}`;
+        const aqiUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${apiKey}`;
 
-        const [currentWeatherResponse, forecastResponse] = await Promise.all([
+        const [currentWeatherResponse, forecastResponse, aqiResponse] = await Promise.all([
             fetch(currentWeatherUrl),
-            fetch(forecastUrl)
+            fetch(forecastUrl),
+            fetch(aqiUrl)
         ]);
 
-        if (!currentWeatherResponse.ok || !forecastResponse.ok) {
+        if (!currentWeatherResponse.ok || !forecastResponse.ok || !aqiResponse.ok) {
             const errorData = !currentWeatherResponse.ok ? await currentWeatherResponse.json() : await forecastResponse.json();
             throw new Error(errorData.message || 'Could not fetch weather data.');
         }
 
         const currentWeatherData = await currentWeatherResponse.json();
         const forecastData = await forecastResponse.json();
+        const aqiData = await aqiResponse.json();
 
         // Prioritize the user's search term for the display name, otherwise use what the API returns.
         displayWeatherData(currentWeatherData, originalCity || currentWeatherData.name);
+        displayAqi(aqiData);
         displayHourlyForecast(forecastData.list);
         displayDailyForecast(forecastData.list, currentWeatherData.dt);
 
@@ -258,18 +288,21 @@ function startCountdown(sunriseTs, sunsetTs) {
  * @param {string} resolvedCityName - The name of the city from the API.
  */
 function displayWeatherData(data, resolvedCityName) {
+    const tempUnit = currentUnit === 'metric' ? '°C' : '°F';
+    const speedUnit = currentUnit === 'metric' ? 'km/h' : 'mph';
+
     updateBackground(data.weather[0].main);
 
     currentCityName = resolvedCityName; // Update global state
     document.getElementById('city-name').textContent = currentCityName;
-    document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}°C`;
+    document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}${tempUnit}`;
     document.getElementById('description').textContent = data.weather[0].description;
     document.getElementById('weather-icon').src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png`;
 
-    document.getElementById('feels-like').textContent = `${Math.round(data.main.feels_like)}°C`;
+    document.getElementById('feels-like').textContent = `${Math.round(data.main.feels_like)}${tempUnit}`;
     document.getElementById('humidity').textContent = `${data.main.humidity}%`;
-    const windSpeedKmh = (data.wind.speed * 3.6).toFixed(1);
-    document.getElementById('wind-speed').textContent = `${windSpeedKmh} km/h`;
+    const windSpeed = currentUnit === 'metric' ? (data.wind.speed * 3.6).toFixed(1) : data.wind.speed.toFixed(1);
+    document.getElementById('wind-speed').textContent = `${windSpeed} ${speedUnit}`;
 
     // Display wind direction with a rotating arrow
     const windArrow = document.getElementById('wind-arrow');
@@ -292,6 +325,31 @@ function displayWeatherData(data, resolvedCityName) {
 }
 
 /**
+ * Displays the Air Quality Index (AQI).
+ * @param {object} aqiData - The AQI data from the API.
+ */
+function displayAqi(aqiData) {
+    const aqiValue = aqiData.list[0].main.aqi;
+    const aqiItem = document.getElementById('aqi-item');
+    const aqiValueSpan = document.getElementById('aqi-value');
+
+    const aqiLevels = {
+        1: { text: 'Good', className: 'good' },
+        2: { text: 'Fair', className: 'fair' },
+        3: { text: 'Moderate', className: 'moderate' },
+        4: { text: 'Poor', className: 'poor' },
+        5: { text: 'Very Poor', className: 'very-poor' }
+    };
+
+    const level = aqiLevels[aqiValue] || { text: 'Unknown', className: '' };
+
+    aqiValueSpan.textContent = `${level.text} (${aqiValue})`;
+    aqiItem.className = 'detail-item aqi-item'; // Reset classes
+    aqiItem.classList.add(level.className);
+    aqiItem.style.display = 'block';
+}
+
+/**
  * Displays the hourly forecast for the next 24 hours.
  * @param {Array} forecastList - The list of 3-hour forecast objects from the /forecast API.
  */
@@ -299,6 +357,7 @@ function displayHourlyForecast(forecastList) {
     const container = document.getElementById('hourly-forecast');
     container.innerHTML = '';
 
+    const tempUnit = currentUnit === 'metric' ? '°C' : '°F';
     const next24Hours = forecastList.slice(0, 8); // The next 8 * 3-hour intervals = 24 hours
 
     next24Hours.forEach(hour => {
@@ -310,7 +369,7 @@ function displayHourlyForecast(forecastList) {
         item.innerHTML = `
             <span>${timeString}</span>
             <img src="https://openweathermap.org/img/wn/${hour.weather[0].icon}.png" alt="${hour.weather[0].description}" title="${hour.weather[0].description}">
-            <span>${Math.round(hour.main.temp)}°C</span>
+            <span>${Math.round(hour.main.temp)}${tempUnit}</span>
         `;
         container.appendChild(item);
     });
@@ -325,6 +384,7 @@ function displayDailyForecast(forecastList, currentDataTimestamp) {
     const container = document.getElementById('daily-forecast');
     container.innerHTML = '';
 
+    const tempUnit = currentUnit === 'metric' ? '°C' : '°F';
     const dailyData = {};
 
     // Group forecast data by day, using UTC dates to avoid timezone issues.
@@ -471,6 +531,7 @@ searchBtn.addEventListener('click', handleSearch);
 locationBtn.addEventListener('click', handleUserLocation);
 favoriteBtn.addEventListener('click', handleFavoriteToggle);
 voiceSearchBtn.addEventListener('click', handleVoiceSearch);
+unitToggleCheckbox.addEventListener('change', handleUnitToggle);
 
 cityInput.addEventListener('keyup', (event) => {
     if (event.key === 'Enter') {
@@ -483,5 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
     populateCityList();
     loadFavorites();
     displayFavorites();
+    loadUnitPreference(); // Load user's unit preference
     updateBackground(); // Set initial default background
+    handleUserLocation(); // Automatically get weather for user's location
 });
