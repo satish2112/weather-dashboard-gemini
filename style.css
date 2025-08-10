@@ -1,0 +1,353 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #333;
+    transition: background 0.8s ease-in-out;
+}
+
+/* --- Dynamic Background Styles --- */
+body.default-bg {
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+}
+body.clear-bg {
+    background: linear-gradient(135deg, #2980B9, #6DD5FA);
+}
+body.clouds-bg {
+    background: linear-gradient(135deg, #606c88, #3f4c6b);
+}
+body.rain-bg {
+    background: linear-gradient(135deg, #2c3e50, #4ca1af);
+}
+body.snow-bg {
+    background: linear-gradient(135deg, #e6dada, #a7c5eb);
+}
+body.thunderstorm-bg {
+    background: linear-gradient(135deg, #141E30, #243B55);
+}
+
+.weather-container {
+    /* Frosted glass effect */
+    background-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); /* For Safari */
+    padding: 25px 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 950px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.main-content {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.left-panel {
+    flex: 1 1 450px;
+    min-width: 320px; /* Prevent excessive shrinking */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.right-panel {
+    flex: 1 1 400px;
+    min-width: 300px; /* Prevent excessive shrinking */
+    display: flex;
+    flex-direction: column;
+    padding-top: 10px; /* Align forecast titles with search box */
+}
+
+.search-box {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.search-box input {
+    flex-grow: 1;
+    border: 1px solid transparent;
+    background-color: rgba(255, 255, 255, 0.3);
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #fff;
+    margin-right: 10px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.search-box input:focus {
+    border-color: #71b7e6;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.search-box input::placeholder {
+    color: #eee;
+}
+
+.search-box button {
+    background-color: #71b7e6;
+    color: #fff;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.search-box #voice-search-btn {
+    background-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    border: 1px solid transparent;
+    padding: 0 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 20px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-right: 10px;
+    line-height: 1;
+}
+
+.search-box #location-btn {
+    background-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    border: 1px solid transparent;
+    padding: 0 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 20px;
+    transition: background-color 0.3s ease;
+    margin-right: 10px;
+    line-height: 1; /* Helps center the emoji vertically */
+}
+
+.search-box button:hover,
+.search-box #voice-search-btn:hover,
+.search-box #location-btn:hover {
+    background-color: #5a9ac9;
+}
+
+.search-box #voice-search-btn.listening {
+    transform: scale(1.1);
+    background-color: #d9534f;
+}
+
+.search-box button:disabled,
+.search-box #voice-search-btn:disabled,
+.search-box #location-btn:disabled {
+    background-color: #999;
+    cursor: not-allowed;
+}
+
+.favorites-section {
+    margin-bottom: 15px;
+}
+
+.favorites-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+.favorite-city {
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #fff;
+    padding: 5px 12px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 14px;
+}
+
+.favorite-city:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.weather-info {
+    animation: fadeIn 0.5s ease-in-out;
+    width: 100%;
+    color: #fff;
+}
+
+.weather-info h1 {
+    font-size: 2.8em;
+    margin-bottom: 10px;
+    font-weight: 600;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.city-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+#favorite-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2.5rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: transform 0.2s ease, color 0.2s ease;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+#favorite-btn.is-favorite {
+    color: #ffeb3b; /* Yellow star for favorite */
+    transform: scale(1.2);
+}
+
+.weather-info #weather-icon {
+    width: 150px;
+    height: 150px;
+    margin-top: -20px;
+    margin-bottom: -20px;
+}
+
+.weather-info p {
+    font-size: 1.2em;
+    margin: 5px 0;
+    text-transform: capitalize;
+}
+
+.weather-info #temperature {
+    font-size: 3.5em;
+    font-weight: 700;
+    margin: 10px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+/* --- New styles for the details section --- */
+.weather-details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px 10px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.detail-item {
+    text-align: center;
+    background: rgba(0,0,0,0.1);
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.countdown-item {
+    grid-column: 1 / -1; /* Span all columns */
+    background: rgba(0,0,0,0.2);
+}
+
+.countdown-item #countdown-label {
+    font-size: 1em;
+}
+
+.countdown-item #countdown-timer {
+    font-size: 1.2em;
+    font-weight: 500;
+}
+
+#wind-arrow {
+    display: inline-block;
+    font-size: 1.5em;
+    line-height: 1;
+    transition: transform 0.5s ease-out;
+}
+
+.detail-item span:first-child {
+    display: block;
+    color: #eee;
+    font-size: 0.9em;
+}
+
+.error-message {
+    color: #ffdddd;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* --- Forecast Section Styles --- */
+.forecast-section {
+    margin-top: 0;
+    width: 100%;
+    color: #fff;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.forecast-section h2 {
+    text-align: left;
+    margin-bottom: 15px;
+    font-size: 1.4em;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+    padding-bottom: 10px;
+}
+
+.forecast-container {
+    display: flex;
+    overflow-x: auto; /* Allows horizontal scrolling */
+    padding-bottom: 15px; /* Space for scrollbar */
+    gap: 15px;
+}
+
+/* Custom scrollbar for a better look */
+.forecast-container::-webkit-scrollbar {
+    height: 8px;
+}
+.forecast-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+}
+.forecast-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.forecast-item {
+    flex: 0 0 80px; /* Prevents shrinking, sets base width */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px;
+    border-radius: 10px;
+    gap: 5px;
+}
+
+.forecast-item img {
+    width: 50px;
+    height: 50px;
+}
+
+/* --- Responsive Design for smaller screens --- */
+@media (max-width: 900px) {
+    .main-content {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .right-panel {
+        padding-top: 0;
+        margin-top: 20px;
+    }
+}

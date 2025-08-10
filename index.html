@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="weather-container">
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="search-box">
+                    <input type="text" id="city-input" list="city-list" placeholder="Enter city name" autocomplete="off">
+                    <datalist id="city-list"></datalist>
+                    <button id="voice-search-btn" title="Search by voice">🎤</button>
+                    <button id="location-btn" title="Use my location">📍</button>
+                    <button id="search-btn">Search</button>
+                </div>
+        
+                <div class="favorites-section" id="favorites-section" style="display: none;">
+                    <div class="favorites-container" id="favorites-container"></div>
+                </div>
+        
+                <div class="error-message" id="error-message" style="display: none;">
+                    City not found. Please try again.
+                </div>
+        
+                <!-- The main weather information card -->
+                <div class="weather-info" id="weather-info" style="display: none;">
+                    <div class="city-header">
+                        <h1 id="city-name"></h1>
+                        <button id="favorite-btn" title="Add to favorites">☆</button>
+                    </div>
+                    <img id="weather-icon" src="" alt="Weather Icon">
+                    <p id="temperature"></p>
+                    <p id="description"></p>
+        
+                    <!-- Additional details section -->
+                    <div class="weather-details">
+                        <div class="detail-item"><span>Feels Like</span><span id="feels-like"></span></div>
+                        <div class="detail-item"><span>Humidity</span><span id="humidity"></span></div>
+                        <div class="detail-item"><span>Wind</span><span id="wind-speed"></span></div>
+                        <div class="detail-item"><span>Wind Direction</span><span id="wind-direction"><span id="wind-arrow">↑</span></span></div>
+                        <div class="detail-item"><span>Sunrise</span><span id="sunrise-time"></span></div>
+                        <div class="detail-item"><span>Sunset</span><span id="sunset-time"></span></div>
+                        <div class="detail-item countdown-item">
+                            <span id="countdown-label"></span>
+                            <span id="countdown-timer"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <!-- Hourly and Daily Forecast Sections -->
+                <div class="forecast-section" id="forecast-section" style="display: none;">
+                    <h2>Hourly Forecast</h2>
+                    <div class="forecast-container" id="hourly-forecast"></div>
+        
+                    <h2>5-Day Forecast</h2>
+                    <div class="forecast-container" id="daily-forecast"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
