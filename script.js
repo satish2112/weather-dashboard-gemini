@@ -15,7 +15,7 @@ const themeToggleBtn = document.getElementById('theme-toggle-btn');
 
 // API configuration
 // The API key is now loaded from config.js
-const apiKey = typeof REPLACE_WITH_YOUR_API_KEY !== 'undefined' ? REPLACE_WITH_YOUR_API_KEY : '';
+const apiKey = '531fa0df445606206bc52c0d35c1d844';
 
 // Global state
 let currentUnit = 'metric'; // 'metric' or 'imperial'
