@@ -9,13 +9,19 @@
 <body>
 
     <div class="weather-container">
-        <div class="unit-toggle-container">
-            <label class="unit-toggle">
-                <input type="checkbox" id="unit-toggle-checkbox">
-                <span class="slider"></span>
-                <span class="labels" data-on="°F" data-off="°C"></span>
-            </label>
-        </div>
+        <header class="app-header">
+            <h1>Weather Dashboard</h1>
+            <div class="header-controls">
+                <button id="theme-toggle-btn" title="Toggle Theme">☀️</button>
+                <div class="unit-toggle-container">
+                    <label class="unit-toggle">
+                        <input type="checkbox" id="unit-toggle-checkbox">
+                        <span class="slider"></span>
+                        <span class="labels" data-on="°F" data-off="°C"></span>
+                    </label>
+                </div>
+            </div>
+        </header>
         <div class="main-content">
             <div class="left-panel">
                 <div class="search-box">
@@ -30,6 +36,10 @@
                     <div class="favorites-container" id="favorites-container"></div>
                 </div>
         
+                <div class="search-history-section" id="search-history-section" style="display: none;">
+                    <div class="search-history-container" id="search-history-container"></div>
+                </div>
+
                 <div class="error-message" id="error-message" style="display: none;">
                     City not found. Please try again.
                 </div>
@@ -72,8 +82,12 @@
                 </div>
             </div>
         </div>
+        <footer class="app-footer">
+            <p>&copy; <span id="current-year">2024</span> Weather App. All data provided by <a href="https://openweathermap.org/" target="_blank" rel="noopener noreferrer">OpenWeatherMap</a>.</p>
+        </footer>
     </div>
 
+    <script src="config.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

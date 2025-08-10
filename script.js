@@ -8,17 +8,22 @@ const locationBtn = document.getElementById('location-btn');
 const voiceSearchBtn = document.getElementById('voice-search-btn');
 const favoriteBtn = document.getElementById('favorite-btn');
 const favoritesContainer = document.getElementById('favorites-container');
+const searchHistoryContainer = document.getElementById('search-history-container');
 const forecastSection = document.getElementById('forecast-section');
 const unitToggleCheckbox = document.getElementById('unit-toggle-checkbox');
+const themeToggleBtn = document.getElementById('theme-toggle-btn');
 
 // API configuration
-const apiKey = '531fa0df445606206bc52c0d35c1d844'; // IMPORTANT: Replace with your own OpenWeatherMap API key
+// The API key is now loaded from config.js
+const apiKey = typeof REPLACE_WITH_YOUR_API_KEY !== 'undefined' ? REPLACE_WITH_YOUR_API_KEY : '';
 
 // Global state
 let currentUnit = 'metric'; // 'metric' or 'imperial'
 let favorites = [];
+let searchHistory = [];
 let currentCityName = '';
 let countdownInterval;
+let currentTheme = 'light';
 
 // A list of major cities for the autosuggest feature
 const MAJOR_CITIES = [
@@ -26,6 +31,31 @@ const MAJOR_CITIES = [
     "Chicago", "Toronto", "Berlin", "Moscow", "Beijing", "Shanghai", "Mumbai", "Delhi",
     "Cairo", "Rio de Janeiro", "Mexico City", "Buenos Aires"
 ];
+
+/**
+ * Loads theme preference and sets it.
+ */
+function loadThemePreference() {
+    const savedTheme = localStorage.getItem('weatherAppTheme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (savedTheme) {
+        currentTheme = savedTheme;
+    } else {
+        currentTheme = systemPrefersDark ? 'dark' : 'light';
+    }
+    document.body.classList.toggle('dark-mode', currentTheme === 'dark');
+    themeToggleBtn.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+}
+
+/**
+ * Handles the theme toggle button click.
+ */
+function handleThemeToggle() {
+    currentTheme = document.body.classList.toggle('dark-mode') ? 'dark' : 'light';
+    themeToggleBtn.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+    localStorage.setItem('weatherAppTheme', currentTheme);
+}
 
 /**
  * Loads unit preference from localStorage and updates the toggle.
@@ -105,6 +135,57 @@ function handleFavoriteToggle() {
 }
 
 /**
+ * Loads search history from localStorage.
+ */
+function loadSearchHistory() {
+    const storedHistory = localStorage.getItem('weatherAppSearchHistory');
+    if (storedHistory) {
+        searchHistory = JSON.parse(storedHistory);
+    }
+}
+
+/**
+ * Saves search history to localStorage.
+ */
+function saveSearchHistory() {
+    localStorage.setItem('weatherAppSearchHistory', JSON.stringify(searchHistory));
+}
+
+/**
+ * Adds a city to the search history.
+ * @param {string} city The city name to add.
+ */
+function addToSearchHistory(city) {
+    // Remove the city if it already exists to move it to the front
+    searchHistory = searchHistory.filter(item => item.toLowerCase() !== city.toLowerCase());
+    // Add the new city to the beginning of the array
+    searchHistory.unshift(city);
+    // Keep the history at a maximum of 5 items
+    if (searchHistory.length > 5) {
+        searchHistory.pop();
+    }
+    saveSearchHistory();
+    displaySearchHistory();
+}
+
+/**
+ * Renders the search history buttons in the UI.
+ */
+function displaySearchHistory() {
+    searchHistoryContainer.innerHTML = '';
+    if (searchHistory.length > 0) {
+        document.getElementById('search-history-section').style.display = 'block';
+        searchHistory.forEach(city => {
+            const historyBtn = document.createElement('button');
+            historyBtn.className = 'history-item';
+            historyBtn.textContent = city;
+            historyBtn.onclick = () => getCoordsForCity(city);
+            searchHistoryContainer.appendChild(historyBtn);
+        });
+    }
+}
+
+/**
  * Populates the datalist with major city names for autosuggest.
  */
 function populateCityList() {
@@ -149,6 +230,7 @@ async function fetchAndDisplayWeather(lat, lon, originalCity = null) {
     locationBtn.disabled = true;
     voiceSearchBtn.disabled = true;
     if (countdownInterval) clearInterval(countdownInterval); // Clear previous countdown
+    addToSearchHistory(originalCity || currentCityName);
     weatherInfoDiv.style.display = 'none';
     forecastSection.style.display = 'none';
     errorMessageDiv.style.display = 'none';
@@ -531,6 +613,7 @@ searchBtn.addEventListener('click', handleSearch);
 locationBtn.addEventListener('click', handleUserLocation);
 favoriteBtn.addEventListener('click', handleFavoriteToggle);
 voiceSearchBtn.addEventListener('click', handleVoiceSearch);
+themeToggleBtn.addEventListener('click', handleThemeToggle);
 unitToggleCheckbox.addEventListener('change', handleUnitToggle);
 
 cityInput.addEventListener('keyup', (event) => {
@@ -541,10 +624,18 @@ cityInput.addEventListener('keyup', (event) => {
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
+    if (!apiKey) {
+        displayError('API Key is missing. Please add it to config.js');
+        return;
+    }
     populateCityList();
     loadFavorites();
     displayFavorites();
+    loadSearchHistory();
+    displaySearchHistory();
+    loadThemePreference();
     loadUnitPreference(); // Load user's unit preference
     updateBackground(); // Set initial default background
     handleUserLocation(); // Automatically get weather for user's location
+    document.getElementById('current-year').textContent = new Date().getFullYear();
 });
